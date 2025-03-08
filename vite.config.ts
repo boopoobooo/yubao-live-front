@@ -15,14 +15,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/userLogin': {
-        target: 'http://yubao.com:8081', // 目标地址
+      '/live/api': {
+        target: 'http://yubao.com:80', // 目标地址
         changeOrigin: true, // 允许跨域
       },
-      '/home': {
-        target: 'http://yubao.com:8081', // 目标地址
-        changeOrigin: true, // 允许跨域
-      },
+      
     },
   },
 });

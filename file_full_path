@@ -1,0 +1,25 @@
+import atobase64 from 'atobase64'; // 引入 atobase64 库
+
+
+const websocketOnMessage = (e) => {
+  const wsData = JSON.parse(e.data)
+
+  console.log('Received message from server:', wsData);  // 添加日志记录
+
+  // 解析 body 部分
+  if (wsData.body) {
+    const decodedBody = atobase64.decode(wsData.body);
+    console.log('Decoded body:', decodedBody);  // 添加日志记录
+  }
+
+  // 系统消息
+  if (wsData.code === 1001) {
+    console.log('IM服务就绪')
+  }
+  
+  // 业务消息
+  if (wsData.code === 1003) {
+    const respData = JSON.parse(wsData.body)
+    handleBizMessage(respData)
+  }
+}

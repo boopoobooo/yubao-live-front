@@ -57,15 +57,15 @@ service.interceptors.response.use(
     // 响应后处理 服务处理正常，并且API服务返回的状态码也是200
     if (response.status === 200 && response.data) {
       if (response.data.code && response.data.code === 200) {
-        return Promise.resolve(response.data.data);
+        return Promise.resolve(response.data);
       } else {
         // 服务处理错误，返回消息
-        console.error('服务处理错误，返回消息为：', response.data.data);
-        return Promise.reject(response.data.data);
+        console.error('服务处理错误，返回消息为：', response.data);
+        return Promise.reject(response.data);
       }
     } else {
       // 服务器返回非200状态码
-      console.error('请求错误，状态嘛为：', response.status);
+      console.error('请求错误，状态码为：', response.status);
       return Promise.reject(response.data);
     }
   },

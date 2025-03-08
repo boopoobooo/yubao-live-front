@@ -73,11 +73,11 @@ async function handleSubmit() {
       code: code.value
     });
     console.log('res为:', res);
-    console.log('res.userId为:', res.userId);
-    if (res.userId) {
-      console.log('res.userId==:', res.userId);
+    console.log('res.userId为:', res.data.userId);
+    if (res.data.userId) {
+      console.log('res.userId==:', res.data.userId);
       // 将 userId 存入 userStore
-      userStore.setUserId(res.userId)
+      userStore.setUserId(res.data.userId)
       // 添加跳转日志
       console.log('即将跳转到/home'); 
       // 跳转到首页
@@ -131,7 +131,7 @@ async function sendSmsCode() {
   console.log('手机号为:', mobile.value.trim());
   const res = await sendLoginCode(mobile.value.trim());
   console.log('验证码响应数据:', res);
-  if (res.success) {
+  if (res.data.success) {
     ElMessage({
       message: '验证码已发送',
       type: 'success',

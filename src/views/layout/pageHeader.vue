@@ -42,27 +42,28 @@
       
   // 新增：组件挂载时执行
   onMounted(async () => {
-    try {
-      // 从本地存储获取用户ID（需要登录时保存）
-      const userId = userStore.userId; 
-      console.log("userStore.userId = ",userId)
-      
-      // 执行查询请求
-      //const res = await queryUserById({ userId })
+    
+    // 从本地存储获取用户ID（需要登录时保存）
+    // const userId = userStore.getLoginUserId(); 
+    // console.log("userStore.userId = ",userId)
+    
+    // 执行查询请求   
+    //const res = await queryUserById({ userId })
 
-      // 执行初始化页面数据请求
-      const res = await initPage(); // 替换为 initPage 接口 【待测试  后端启动gateway】
-      
-      // 更新用户信息
-      if(res.code === 200) {
-        userName.value = res.data.nickName
-        //=============头像信息=============
-        //userAvatar.value = res.data.avatarUrl   
-        isLoggedIn.value = true
-      }
-    } catch (error) {
-      console.error('用户信息获取失败:', error)
+    // 执行初始化页面数据请求
+    const res = await initPage({ }); 
+    console.log("res = ",res)
+    
+    // 更新用户信息
+    if(res.code === 200) {
+      userName.value = res.data.nickName
+      //=============头像信息=============
+      userAvatar.value = res.data.avatar
+      isLoggedIn.value = true
+      userStore.storeUser(res.data.userId, res.data.nickName, res.data.avatar); // 调用storeUser方法更新用户信息
+      console.log("userStore.getLoginUserId = ", userStore.getLoginUserId)
     }
+    
   })
 
 

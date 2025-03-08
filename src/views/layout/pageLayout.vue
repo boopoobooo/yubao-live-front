@@ -7,7 +7,7 @@
             <el-container>
                 <el-header><pageHeader /></el-header>
                 <el-main><RouterView></RouterView></el-main>
-                <el-footer>Copyright © 长沙图灵教育科技有限公司 All Rights Reserved.</el-footer>
+                <el-footer>Copyright ©  All Rights Reserved.</el-footer>
             </el-container>
         </el-container>
     </div>

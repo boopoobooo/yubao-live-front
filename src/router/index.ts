@@ -35,7 +35,7 @@ const router = createRouter({
       }]
     },
     {
-      path:'/room/:id',
+      path:'/room/:roomId',
       name:'livingRoom',
       component:()=>import('@/views/roomlist/roomLiving.vue'),
       meta:{title:'直播间'}

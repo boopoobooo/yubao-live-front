@@ -39,7 +39,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="shop_tab" v-show="showShopTab == true" id="shop_tab">
+                                    <!-- <div class="shop_tab" v-show="showShopTab == true" id="shop_tab">
                                         <div style="text-align: center;">
                                             <img :src="shopDetailInfo.originalIconUrl" class="shop_detail_img">
                                         </div>
@@ -53,9 +53,9 @@
                                                     @click="addShopCar(shopDetailInfo.skuId)">加入购物车</el-button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
 
-                                    <div class="car_tab" id="car_detail" v-show="showCarTab == true">
+                                    <!-- <div class="car_tab" id="car_detail" v-show="showCarTab == true">
                                         <div v-show="showOrderTab == false">
                                             <div class="car_item" v-for="item in shopCarInfo">
                                                 <img :src="item.skuInfoDTO.iconUrl" class="car_item_img" alt="">
@@ -89,14 +89,18 @@
                                                 <el-button type="info" @click="turnBackShopCar()">返回购物车</el-button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
 
 
+                                    
                                     <div class="liveroom_top">
                                         <div style="position: relative;top: -30px;">
                                             <div class="anchor_name">
-                                                <div style="display: inline-block;">{{ initInfo.nickName }}</div>
+                                                <div style="display: inline-block;">当前主播：{{ initInfo.nickName }}</div>
                                                 <img src="@/asserts/living.jpg" class="anchor_label" alt="">
+                                                <el-button type="danger" round
+                                                    style="position: relative;left: 10px;">关注</el-button>
+                                                <el-button type="info" :icon="Share" circle alt="分享"></el-button>
                                             </div>
                                             <img :src="initInfo.avatar" class="anchor_img" alt="">
                                         </div>
@@ -185,26 +189,24 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <br>
-                                        <el-form ref="form" @submit.native.prevent>
-                                            <el-form-item>
-                                                <!-- <el-input v-model="form.review" @keyup.enter.native="sendReview" -->
-                                                <el-input v-model="form.review" placeholder="发送直播评论"></el-input>
-                                            </el-form-item>
-                                            <el-form-item style="text-align:right;">
-                                                <!-- <el-button type="danger" v-if="showPrepareBtn"
-                                    @click="prepareRedPacket">初始化红包雨</el-button>
-                                <el-button type="success" v-if="showStartBtn"
-                                    @click="startSendRedPacket">开始派发红包雨</el-button>
-                                <el-button type="primary" @click="sendReview">发送消息</el-button> -->
 
-                                                <el-button type="danger" v-if="showPrepareBtn">初始化红包雨</el-button>
-                                                <el-button type="success" v-if="showStartBtn">开始派发红包雨</el-button>
-                                                <el-button type="primary">发送消息</el-button>
-                                            </el-form-item>
-                                        </el-form>
+                                    <div>
+                                      <br>
+                                      <el-form v-if="userId">
+                                        <el-form-item>
+                                          <el-input v-model="form.review" placeholder="发送直播评论"></el-input>
+                                        </el-form-item>
+                                        <el-form-item style="text-align:right;">
+                                          <el-button type="primary" @click="sendReview()">发送消息</el-button>
+                                        </el-form-item>
+                                      </el-form>
+                                      <div v-if="!userId" style="padding: 10px; text-align: center;">
+                                        <el-button type="warning" style="width: 90%;" plain>
+                                          请先登录，才能开始聊天
+                                        </el-button>
+                                      </div>
                                     </div>
+
                                 </el-col>
                             </el-row>
                         </div>
@@ -222,14 +224,57 @@ import '@/styles/red_packet.css'
 
 import pageHeader from '@/views/layout/pageHeader.vue'
 import navBar from '@/views/layout/navBar.vue'
+import {
+  getImConfig,
+  anchorConfig,
+  sendGiftApi,
+  queryShopInfo,
+  addShopCar,
+  getShopCarInfo,
+  removeFromShopCar,
+  createOrder,
+  payOrder,
+  prepareRedPacket,
+  startRedPacket
+} from '@/http/api';
 
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, reactive,nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { userLoginStore } from '@/stores/userLoginStore' // 引入 userStore
+import { storeToRefs } from 'pinia';
+
+// 创建 store 实例
+const userStore = userLoginStore();
+
+// 获取 userId
+const userId = userStore.getLoginUserId;
+
+console.info("当前直播间的userId = ",userId)
+
+// WebSocket相关
+const websock = ref(null)
+const imServerConfig = ref({})
+const initInfo = ref({})
+const roomId = ref(-1)
+
+// 消息处理
+const chatList = ref([])
+//const form = ref({ review: '' })
+// const form = reactive({
+//   review: ''
+// })
+
+const form = reactive({
+  review: ''
+})
+
+// 心跳定时器
+let heartTimer = null
 
 let route = useRoute()
 console.info(route.params)
-let form = ref({ review: '' })
-let chatList = ref([])
+
+
 let giftList = ref([
     {giftId:'1',coverImgUrl:'/img/gift1.png',giftName:'礼物1',price:'5'},
     {giftId:'2',coverImgUrl:'/img/gift2.png',giftName:'礼物2',price:'10'},
@@ -245,16 +290,15 @@ let giftList = ref([
 let canvas = ref({})
 let player = ref({})
 let parser = ref({})
-let websock = ref(null)
-let roomId = ref(-1)
+
 let anchorId = ref(-1)
 let isLogin = ref(false)
 let wsServer = ref('')
-let initInfo = ref({
-    nickName: 'roy',
-    avatar: '/img/avatar.png'
-})
-let imServerConfig = ref({})
+// let initInfo = ref({
+//     nickName: 'roy',
+//     avatar: '/img/avatar.png'
+// })
+
 let showGiftRank = ref(false)
 let rankList = ref([])
 let accountInfo = ref({})
@@ -280,5 +324,226 @@ let shopCarInfo = ref([])
 let showOrderTab = ref(false)
 let address = ref('')
 let shopCarTotalPrice = ref(0)
+
+
+// 初始化IM服务
+const initImService = async () => {
+  try {
+
+  
+    // 获取 IM 配置
+    const imConfig = await getImConfig();
+    console.log('IM服务配置:', imConfig);
+    imServerConfig.value = imConfig.data;
+
+    // 从路由参数中获取 roomId
+    const roomId = route.params.roomId;
+    console.log('roomId = :', roomId);
+    // 获取直播间配置
+    const roomConfig = await anchorConfig({ roomId });
+    console.log('直播间配置:', roomConfig);
+    initInfo.value = roomConfig.data;
+
+    // 建立 WebSocket 连接
+    const wsUrl = `ws://${imServerConfig.value.wsImServerAddress}/${imServerConfig.value.token}/${initInfo.value.userId}/1001/${route.params.roomId}`;
+    websock.value = new WebSocket(wsUrl);
+
+    // 设置事件监听
+    websock.value.onmessage = websocketOnMessage;
+    websock.value.onopen = websocketOnOpen;
+    websock.value.onerror = websocketOnError;
+    websock.value.onclose = websocketClose;
+  } catch (error) {
+    console.error('IM初始化失败:', error)
+  }
+}
+
+// WebSocket事件处理
+const websocketOnOpen = () => {
+  console.log('WebSocket连接成功');
+  startHeartBeat();
+};
+
+const websocketOnError = (e) => {
+  console.error('WebSocket错误:', e);
+};
+
+const websocketClose = (e) => {
+  console.log('WebSocket关闭:', e);
+  if (heartTimer) clearInterval(heartTimer);
+};
+
+// 消息处理
+const websocketOnMessage = (e) => {
+  const wsData = JSON.parse(e.data)
+  
+  // 3. Base64解码（兼容中文等UTF-8字符）
+  const decodedBody = decodeBase64(wsData.body);
+
+// 4. 输出解码后的内容
+  console.log('Base64 decoded body:', decodedBody);
+
+  
+  console.log('Received message from server:', wsData);  // 添加日志记录
+  
+  // 系统消息
+  if (wsData.msgCode === 1001) {
+    console.log('IM服务就绪')
+  }
+  
+  // 业务消息
+  if (wsData.msgCode === 1003) {
+    const respData = decodeBase64(wsData.body)
+    handleBizMessage(respData)
+  }
+}
+
+// 业务消息分发
+const handleBizMessage = (respData) => {
+  respData = JSON.parse(respData);
+  console.log('处理业务消息 business message:', respData);  
+
+  console.log('当前bizCode = :', respData.bizCode);  
+
+  if (respData.bizCode === "5555") {
+    //聊天消息
+    console.log('聊天消息:', respData);
+    handleChatMessage(respData);
+  }else if (respData.bizCode === "5556") {
+    //送礼成功
+    handleGiftMessage(respData);
+  }
+
+  // 发送ACK
+  sendAck(respData.msgId)
+}
+
+// 处理聊天消息
+const handleChatMessage = (respData) => {
+  console.log('handleChatMessage:', respData)
+  chatList.value.push({
+    msgType: 1,
+    msg: {
+      senderName: respData.userId,
+      senderImg: respData.senderAvtar,
+      content: respData.data.content
+    }
+  });
+  console.log('聊天消息加入到消息列表队列中:', respData);  // 添加日志记录
+
+  // 滚动到底部
+  nextTick(() => {
+    const chatBox = document.getElementById('talk-content-box')
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight
+  })
+}
+
+// 完善发送方法
+const sendReview = async () => {
+  if (!form.review.trim()) {
+    alert('请输入消息内容')
+    return
+  }
+
+  try {
+    const msgPayload = JSON.stringify({
+      roomId: route.params.roomId,
+      type: 1,
+      content: form.review,
+      senderName: initInfo.value.nickName,
+      senderAvtar: initInfo.value.avatar  // 注意字段名可能需要与后端一致
+    })
+
+    await websock.value.send(JSON.stringify({
+      magic: 19231,
+      code: 1003,
+      len: msgPayload.length,
+      body: JSON.stringify({
+        bizCode: 5555,
+        data: msgPayload
+      })
+    }))
+
+    // 清空输入并滚动到底部
+    form.review = ''
+    nextTick(() => {
+      const chatBox = document.getElementById('talk-content-box')
+      if (chatBox) chatBox.scrollTop = chatBox.scrollHeight
+    })
+  } catch (error) {
+    console.error('消息发送失败:', error)
+    alert('消息发送失败，请检查网络连接')
+  }
+}
+
+// 发送礼物
+const sendGift = async (giftId) => {
+  try {
+    const result = await sendGiftApi({
+      giftId,
+      type: 0,
+      roomId: route.params.roomId,
+      receiverId: initInfo.value.anchorId
+    });
+    console.log('礼物发送结果:', result);
+  } catch (error) {
+    console.error('礼物发送失败:', error);
+  }
+};
+
+// 心跳机制
+const startHeartBeat = () => {
+  heartTimer = setInterval(() => {
+    if (websock.value.readyState === WebSocket.OPEN) {
+      websock.value.send(JSON.stringify({
+        magic: 19231,
+        code: 1004,
+        len: JSON.stringify({ userId: initInfo.value.userId }).length,
+        body: JSON.stringify({ userId: initInfo.value.userId })
+      }));
+    }
+  }, 6000);
+};
+
+// Base64解码函数（支持UTF-8）
+const decodeBase64 = (base64Str) => {
+    // 将Base64字符串转换为二进制数据
+    const rawData = atob(base64Str);
+    
+    // 将二进制数据转换为Uint8Array
+    const bytes = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; i++) {
+        bytes[i] = rawData.charCodeAt(i);
+    }
+    
+    // 使用TextDecoder解码为UTF-8字符串
+    return new TextDecoder('utf-8').decode(bytes);
+};
+// ACK 确认
+const sendAck = (msgId) => {
+  const ackBody = {
+    userId: userId,
+    appId: 1001,
+  };
+
+  websock.value.send(JSON.stringify({
+    magic: 19231,
+    code: 1005,
+    len: JSON.stringify(ackBody).length,
+    body: JSON.stringify(ackBody)
+  }));
+};
+
+// 组件生命周期
+onMounted(() => {
+  roomId.value = route.params.roomId
+  initImService()
+})
+
+onUnmounted(() => {
+  if (websock.value) websock.value.close()
+  if (heartTimer) clearInterval(heartTimer)
+})
+
 </script>
 <style scoped></style>

@@ -71,6 +71,8 @@ const addRoom = () => {
   };  
   rooms.value.push(newRoom);  
 }; 
+
+
 const gotoRome = (roomid) => {
     console.log("跳转到直播间：",roomid)
     let targetURL = router.resolve({path : '/room/'+roomid}).href

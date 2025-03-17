@@ -39,60 +39,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- <div class="shop_tab" v-show="showShopTab == true" id="shop_tab">
-                                        <div style="text-align: center;">
-                                            <img :src="shopDetailInfo.originalIconUrl" class="shop_detail_img">
-                                        </div>
-                                        <div style="text-align: center;">
-                                            <div style="color: orange;"><b>{{ shopDetailInfo.name }}</b></div>
-                                            <div style="color: grey;">{{ shopDetailInfo.remark }}</div>
-                                            <div><span style="color: red;"><b>{{ shopDetailInfo.skuPrice }}元</b></span>
-                                            </div>
-                                            <div style="margin-top: 20px;">
-                                                <el-button type="success"
-                                                    @click="addShopCar(shopDetailInfo.skuId)">加入购物车</el-button>
-                                            </div>
-                                        </div>
-                                    </div> -->
-
-                                    <!-- <div class="car_tab" id="car_detail" v-show="showCarTab == true">
-                                        <div v-show="showOrderTab == false">
-                                            <div class="car_item" v-for="item in shopCarInfo">
-                                                <img :src="item.skuInfoDTO.iconUrl" class="car_item_img" alt="">
-                                                <span class="car_item_desc">{{ item.skuInfoDTO.name }} 数量：{{ item.count
-                                                    }}</span>
-                                                <el-button class="clear-shop-info-btn"
-                                                    @click="removeShopCarItem(item.skuInfoDTO.skuId)"
-                                                    type="danger">删除</el-button>
-                                            </div>
-                                            <div style="text-align: center;margin-top: 20px;">
-                                                <el-input v-model="address" style="width: 60%;"
-                                                    placeholder="请填写下单收货地址"></el-input>
-                                                <br>
-                                                <br>
-                                                <el-button type="success" @click="prepareOrder()">下单支付</el-button>
-                                            </div>
-                                        </div>
-                                        <div v-show="showOrderTab == true">
-                                            <div class="car_item" v-for="item in shopCarInfo">
-                                                <img :src="item.skuInfoDTO.iconUrl" class="car_item_img" alt="">
-                                                <span class="car_item_desc">{{ item.skuInfoDTO.name }} 数量：{{ item.count
-                                                    }}</span>
-                                            </div>
-                                            <div class="pre_order_total_price">
-                                                <b>总金额：{{ shopCarTotalPrice }}币</b>
-                                            </div>
-                                            <div style="text-align: center;margin-top: 20px;">
-                                                <el-button type="success" @click="payNow()">立马支付</el-button>
-                                            </div>
-                                            <div style="text-align: center;margin-top: 20px;">
-                                                <el-button type="info" @click="turnBackShopCar()">返回购物车</el-button>
-                                            </div>
-                                        </div>
-                                    </div> -->
-
-
-                                    
                                     <div class="liveroom_top">
                                         <div style="position: relative;top: -30px;">
                                             <div class="anchor_name">
@@ -107,19 +53,13 @@
                                     </div>
 
                                     <div id="svga-wrap" class="svga-wrap">
-                                    </div>
+                                    </div>    
                                     <video :poster="initInfo.avatar" width="100%"
                                         style="background-color: rgb(18, 9, 37);">
-                                        <!-- <source src="test.mp4"> -->
                                     </video>
                                     <div class="gift_content">
                                         <div class="gift_content_title">礼物面板</div>
                                         <div class="bank_tab">
-                                            <!-- <span :visible.sync="showPrepareBtn"> 
-                        <el-button 
-                        type="danger" class="prepare_red_packet" @click="prepareRedPacket">红包雨预热</el-button>
-                    </span> -->
-
                                             <span style="position: relative;left: -50px;" @click="toShowCarTab()">
                                                 查看购物车
                                             </span>
@@ -127,6 +67,8 @@
                                                 钱包余额:
                                             </span>
                                             <span style="color: white">{{ currentBalance }}</span>
+                                            <!-- 新增充值按钮 -->
+                                            <el-button type="primary" @click="showRechargeProducts">充值</el-button>
                                         </div>
                                         <div style="white-space: nowrap;overflow-x: scroll;overflow-y: hidden;">
                                             <div class="gift_item" v-for="item in giftList" :key="item.giftId">
@@ -138,36 +80,30 @@
                                         </div>
                                     </div>
                                 </el-col>
-                                <div class="grey_bg" v-show="showBankInfo == true" @click="hiddenBankInfoTabNow()">
+                                <div class="grey_bg" v-show="showRecharge" @click="showRecharge = false">
                                 </div>
-                                <div class="recharge_tab" v-show="showBankInfo == true">
+                                <div class="recharge_tab" v-show="showRecharge">
                                     <div style="height: 60px;">
-                                        <span><img src="@/asserts/livingroom.jpg" alt=""
-                                                style="width: 40px;height: 40px;position:relative; top: 15px;left: 10%;">
+                                        <span>
+                                            <img src="@/asserts/livingroom.jpg" alt="" style="width: 40px;height: 40px;position:relative; top: 15px;left: 10%;">
                                             <span style="position: relative;left: 12%;top:5px;">在线充值</span>
-                                            <span style="position: relative;left: 50%;top:5px;">当前余额：
-                                                <span style="color: #f37d08;"><b>{{ currentBalance }}</b></span>
-                                            </span>
+                                            <span style="position: relative;left: 50%;top:5px;">当前余额：<span style="color: #f37d08;"><b>{{ currentBalance }}</b></span></span>
                                         </span>
                                     </div>
                                     <div style="text-align: center;">
                                         <span v-for="item in payProducts" :key="item.id">
-                                            <button class="recharge_btn" :id="item.id" @click="payProduct(item.id)">
-                                                {{ item.name }}<br>
-                                                <span class="coin_um">{{ item.coinNum }}金币</span>
+                                            <button class="recharge_btn" :id="item.id" @click="payProduct(item.id)">{{ item.name }}<br>
+                                                <span class="coin_um">{{ item.coinNum }}旗鱼币</span>
                                             </button>
                                         </span>
                                     </div>
                                     <div style="height: 50px;" v-show="qrCode == ''"></div>
-                                    <div style="height: 250px;" v-show="qrCode != ''">
+                                    <div style="height: 250px;" v-show="qrCode">
                                         <div style="text-align: center;">
                                             <img src="@/asserts/qrcode.png" style="height: 180px;width: 180px;" alt="">
                                             <div style="font-size: 13px;color: #a4a4a4">
-                                                请使用 <img
-                                                    style="display: inline-block;width: 13px;height: 13px;position:relative;top: 1px;"
-                                                    src="@/asserts/zfb.jpg"> 支付宝/
-                                                <img style="display: inline-block;width: 13px;height: 13px;position:relative;top: 1px;"
-                                                    src="@/asserts/wx.jpg"> 微信 扫码支付
+                                                请使用 <img style="display: inline-block;width: 13px;height: 13px;position:relative;top: 1px;" src="@/asserts/zfb.jpg"> 支付宝/
+                                                <img style="display: inline-block;width: 13px;height: 13px;position:relative;top: 1px;" src="@/asserts/wx.jpg"> 微信 扫码支付
                                             </div>
                                         </div>
                                     </div>
@@ -215,12 +151,12 @@
             </el-container>
         </el-container>
     </div>
-
 </template>
 <script setup>
 import '@/styles/common.css'
 import '@/styles/living_room.css'
 import '@/styles/red_packet.css'
+
 
 import pageHeader from '@/views/layout/pageHeader.vue'
 import navBar from '@/views/layout/navBar.vue'
@@ -235,13 +171,17 @@ import {
   createOrder,
   payOrder,
   prepareRedPacket,
-  startRedPacket
+  startRedPacket,
+  listGiftConfig,
+  listPayProducts,
+  payProductApi
 } from '@/http/api';
 
-import { ref, onMounted, onUnmounted, reactive,nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, reactive, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { userLoginStore } from '@/stores/userLoginStore' // 引入 userStore
 import { storeToRefs } from 'pinia';
+
 
 // 创建 store 实例
 const userStore = userLoginStore();
@@ -249,7 +189,7 @@ const userStore = userLoginStore();
 // 获取 userId
 const userId = userStore.getLoginUserId;
 
-console.info("当前直播间的userId = ",userId)
+console.info("当前直播间的userId = ", userId)
 
 // WebSocket相关
 const websock = ref(null)
@@ -259,11 +199,6 @@ const roomId = ref(-1)
 
 // 消息处理
 const chatList = ref([])
-//const form = ref({ review: '' })
-// const form = reactive({
-//   review: ''
-// })
-
 const form = reactive({
   review: ''
 })
@@ -274,31 +209,14 @@ let heartTimer = null
 let route = useRoute()
 console.info(route.params)
 
-
-let giftList = ref([
-    {giftId:'1',coverImgUrl:'/img/gift1.png',giftName:'礼物1',price:'5'},
-    {giftId:'2',coverImgUrl:'/img/gift2.png',giftName:'礼物2',price:'10'},
-    {giftId:'3',coverImgUrl:'/img/gift3.png',giftName:'礼物3',price:'10'},
-    {giftId:'4',coverImgUrl:'/img/gift4.png',giftName:'礼物4',price:'20'},
-    {giftId:'5',coverImgUrl:'/img/gift5.png',giftName:'礼物5',price:'20'},
-    {giftId:'6',coverImgUrl:'/img/gift6.png',giftName:'礼物6',price:'30'},
-    {giftId:'7',coverImgUrl:'/img/gift7.png',giftName:'礼物7',price:'30'},
-    {giftId:'8',coverImgUrl:'/img/gift8.png',giftName:'礼物8',price:'40'},
-    {giftId:'9',coverImgUrl:'/img/gift9.png',giftName:'礼物9',price:'40'},
-    {giftId:'10',coverImgUrl:'/img/gift10.png',giftName:'礼物10',price:'50'}
-])
+let giftList = ref([])
 let canvas = ref({})
-let player = ref({})
-let parser = ref({})
+let player = ref(null) // 确保 player 初始值为 null
+let parser = ref(null) // 确保 parser 初始值为 null
 
 let anchorId = ref(-1)
 let isLogin = ref(false)
 let wsServer = ref('')
-// let initInfo = ref({
-//     nickName: 'roy',
-//     avatar: '/img/avatar.png'
-// })
-
 let showGiftRank = ref(false)
 let rankList = ref([])
 let accountInfo = ref({})
@@ -324,13 +242,11 @@ let shopCarInfo = ref([])
 let showOrderTab = ref(false)
 let address = ref('')
 let shopCarTotalPrice = ref(0)
-
+const showRecharge = ref(false); // 确保初始值为 false
 
 // 初始化IM服务
 const initImService = async () => {
   try {
-
-  
     // 获取 IM 配置
     const imConfig = await getImConfig();
     console.log('IM服务配置:', imConfig);
@@ -406,11 +322,11 @@ const handleBizMessage = (respData) => {
   console.log('当前bizCode = :', respData.bizCode);  
 
   if (respData.bizCode === "5555") {
-    //聊天消息
+    // 聊天消息
     console.log('聊天消息:', respData);
     handleChatMessage(respData);
-  }else if (respData.bizCode === "5556") {
-    //送礼成功
+  } else if (respData.bizCode === "5556") {
+    // 送礼成功
     handleGiftMessage(respData);
   }
 
@@ -421,12 +337,13 @@ const handleBizMessage = (respData) => {
 // 处理聊天消息
 const handleChatMessage = (respData) => {
   console.log('handleChatMessage:', respData)
+  const respMsg = JSON.parse(respData.data);
   chatList.value.push({
     msgType: 1,
     msg: {
-      senderName: respData.userId,
-      senderImg: respData.senderAvtar,
-      content: respData.data.content
+      senderName: respMsg.senderName,
+      senderImg: respMsg.senderAvtar, 
+      content: respMsg.content
     }
   });
   console.log('聊天消息加入到消息列表队列中:', respData);  // 添加日志记录
@@ -438,7 +355,41 @@ const handleChatMessage = (respData) => {
   })
 }
 
-// 完善发送方法
+// ===处理送礼消息=======
+const handleGiftMessage = (respData) => {
+  const giftInfo = JSON.parse(respData.data);
+  console.log('送礼消息结果:', giftInfo);
+
+  // 播放礼物特效
+  playGiftSvga(giftInfo.url);
+
+  // 添加礼物消息到聊天列表
+  chatList.value.push({
+    msgType: 5,
+    msg: `来自 ${giftInfo.senderName} 的礼物：${giftInfo.giftName}`
+  });
+
+  // 滚动到底部
+  nextTick(() => {
+    const chatBox = document.getElementById('talk-content-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+  });
+};
+
+// 播放礼物特效
+const playGiftSvga = (url) => {
+  console.log('播放礼物特效:', url);
+  parser.value.load(url, (videoItem) => {
+    player.value.loops = 1; // 设置循环播放次数为1
+    player.value.setVideoItem(videoItem);
+    player.value.startAnimation();
+    player.value.onFinished(() => {
+      console.log("礼物特效播放完成");
+    });
+  });
+};
+
+// 发送方法
 const sendReview = async () => {
   if (!form.review.trim()) {
     alert('请输入消息内容')
@@ -450,8 +401,8 @@ const sendReview = async () => {
       roomId: route.params.roomId,
       type: 1,
       content: form.review,
-      senderName: initInfo.value.nickName,
-      senderAvtar: initInfo.value.avatar  // 注意字段名可能需要与后端一致
+      senderName: initInfo.value.watcherNickName,
+      senderAvtar: initInfo.value.watcherAvatar  // 注意字段名可能需要与后端一致
     })
 
     await websock.value.send(JSON.stringify({
@@ -476,6 +427,17 @@ const sendReview = async () => {
   }
 }
 
+// 显示银行信息的方法
+const showBankInfoTab = () => {
+  showBankInfo.value = true;
+};
+
+    // 隐藏银行信息的方法
+const hiddenBankInfoTabNow = () => {
+  showBankInfo.value = false;
+};
+
+
 // 发送礼物
 const sendGift = async (giftId) => {
   try {
@@ -486,6 +448,11 @@ const sendGift = async (giftId) => {
       receiverId: initInfo.value.anchorId
     });
     console.log('礼物发送结果:', result);
+
+    if (result.success) {
+      console.log('礼物发送成功');
+      // 可以在这里添加提示，例如：this.$message.success('礼物发送成功');
+    }
   } catch (error) {
     console.error('礼物发送失败:', error);
   }
@@ -519,6 +486,7 @@ const decodeBase64 = (base64Str) => {
     // 使用TextDecoder解码为UTF-8字符串
     return new TextDecoder('utf-8').decode(bytes);
 };
+
 // ACK 确认
 const sendAck = (msgId) => {
   const ackBody = {
@@ -534,16 +502,94 @@ const sendAck = (msgId) => {
   }));
 };
 
+// 初始化礼物配置
+const initGiftConfig = async () => {
+  try {
+    const resp = await listGiftConfig();
+    if (resp.code === 200) { // 修正了这里，将 = 改为 ===
+      giftList.value = resp.data; // 假设返回的数据中包含 giftList 字段
+      console.log('礼物配置初始化成功:', giftList.value);
+    } else {
+      console.error('获取礼物配置失败:', resp.message);
+    }
+  } catch (error) {
+    console.error('获取礼物配置时发生错误:', error);
+  }
+};
+
+// 初始化商品充值列表
+const listPayProduct = async () => {
+    try {
+        let data = new FormData();
+        data.append("type", 0);
+        const resp = await listPayProducts(data);
+        if (resp.code === 200) {
+            payProducts.value = resp.data.payProductItemVOList;
+            currentBalance.value = resp.data.currentBalance;
+            console.log('商品充值列表初始化成功:', payProducts.value);
+        } else {
+            console.error('获取商品充值列表失败:', resp.message);
+        }
+    } catch (error) {
+        console.error('获取商品充值列表时发生错误:', error);
+    }
+};
+
+// payProduct 支付方法
+const payProduct = async (productId) => {
+    try {
+        let data = new FormData();
+        data.append("productId", productId);
+        data.append("payChannel", 1); // 充值渠道
+        data.append("paySource", 1); // 支付来源（直播间支付）
+        const resp = await payProductApi(data);
+
+        if (resp.code !== 200) {
+            console.error('充值异常');
+        } else {
+            console.log('充值成功');
+            listPayProduct();
+        }
+    } catch (error) {
+        console.error('充值时发生错误:', error);
+        console.error('充值异常');
+    }
+};
+
+// 初始化 SVGA 播放器
+const initSvga = () => {
+    const svgaCanvas = document.getElementById('svga-wrap');
+    if (svgaCanvas) { // 检查 svgaCanvas 是否存在
+        if (window.SVGA) {
+            player.value = new window.SVGA.Player(svgaCanvas);
+            parser.value = new window.SVGA.Parser(svgaCanvas);
+        } else {
+            console.error('SVGA 库未加载');
+        }
+    } else {
+        console.error('svga-wrap 元素未找到');
+    }
+};
+
 // 组件生命周期
 onMounted(() => {
-  roomId.value = route.params.roomId
-  initImService()
-})
+    roomId.value = route.params.roomId;
+    initImService();
+
+    initSvga(); // 初始化 SVGA 播放器
+    initGiftConfig(); // 初始化礼物配置
+    listPayProduct(); // 初始化商品充值列表
+});
 
 onUnmounted(() => {
-  if (websock.value) websock.value.close()
-  if (heartTimer) clearInterval(heartTimer)
-})
+    if (websock.value) websock.value.close();
+    if (heartTimer) clearInterval(heartTimer);
+});
+
+// 修改点击充值按钮后的逻辑
+const showRechargeProducts = () => {
+    showRecharge.value = true;
+};
 
 </script>
 <style scoped></style>

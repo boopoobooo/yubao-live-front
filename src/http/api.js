@@ -63,15 +63,38 @@ export function anchorConfig(data) {
 }
 
 
-// ----后端待实现=======================================================================================
+// 新增的获取礼物配置列表的方法
+/**
+ * 获取礼物配置列表
+ * @returns {Promise} - 返回一个Promise对象，包含后端返回的礼物配置列表
+ */
+export function listGiftConfig() {
+  return request.post('/live/api/gift/listGift');
+}
+
+export function listPayProducts(data) {
+  return request.post('/live/api/bank/products',data);
+}
+
+
 /**
  * 发送礼物  
  * @param {Object} data - 请求参数，包含礼物ID、直播间ID、接收者ID等信息
  * @returns {Promise} - 返回一个Promise对象，包含后端返回的数据
  */
 export function sendGiftApi(data) {
-  return request.post(API.SEND_GIFT, qs.stringify(data));
+  return request.post('/live/api/gift/send', qs.stringify(data));
 }
+
+/**
+ * 发起支付
+ */
+export function payProductApi (data) {
+  return request.post('/live/api/bank/payProduct', data);
+};
+
+
+// ----后端待实现=======================================================================================
 /**
  * 查询秒杀商品信息
  * @param {Object} data - 请求参数，包含直播间ID等信息
